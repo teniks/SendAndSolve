@@ -1,4 +1,4 @@
-package su.sendandsolve.server.data.service;
+package su.sendandsolve.server.data.controller;
 
 import org.springframework.web.bind.annotation.*;
 

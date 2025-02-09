@@ -1,23 +1,14 @@
 package su.sendandsolve.server.data.datatransferobject;
 
-import org.springframework.stereotype.Component;
+import org.mapstruct.Mapper;
+import org.mapstruct.MappingConstants;
 import su.sendandsolve.server.data.domain.User;
-import su.sendandsolve.server.data.util.MappingUtil;
 
-@Component
-public class UserMapper implements GenericMapper<UserDto, User> {
+import java.util.List;
 
-    @Override
-    public UserDto toDto(User entity) {
-        UserDto dto = new UserDto();
-        MappingUtil.copyFields(entity, dto);
-        return dto;
-    }
+@Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
+public interface UserMapper {
+    UserResponse toUserResponse(User user); //map User to UserResponse
 
-    @Override
-    public User toEntity(UserDto dto) {
-        User user = new User();
-        MappingUtil.copyFields(dto, user);
-        return user;
-    }
+    List<UserResponse> toUserResponseList(List<User> users); //map list of User to list of UserResponse
 }

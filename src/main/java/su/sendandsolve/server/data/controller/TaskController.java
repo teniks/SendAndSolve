@@ -1,86 +1,83 @@
-package su.sendandsolve.server.data.service;
+package su.sendandsolve.server.data.controller;
 
-import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+import su.sendandsolve.server.data.datatransferobject.TaskResponse;
 import su.sendandsolve.server.data.domain.Resource;
 import su.sendandsolve.server.data.domain.Tag;
 import su.sendandsolve.server.data.domain.Task;
-import su.sendandsolve.server.data.repository.ResourceRepository;
-import su.sendandsolve.server.data.repository.TagRepository;
-import su.sendandsolve.server.data.repository.TaskRepository;
+import su.sendandsolve.server.data.service.TaskService;
 
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @RestController // Помечаем класс как контроллер, обрабатывающий HTTP-запросы
 @RequestMapping("/api/tasks") // Базовый путь для всех методов контроллера
-public class TaskController extends SimpleBaseController<Task, UUID> {
-    private final TagRepository tagRepository;
-    private final ResourceRepository resourceRepository;
+public class TaskController extends BaseController<TaskResponse, Task, UUID> {
 
-    public TaskController(TaskRepository repository, TagRepository tagRepository, ResourceRepository resourceRepository) {
-        super(repository);
-        this.tagRepository = tagRepository;
-        this.resourceRepository = resourceRepository;
+
+    public TaskController(TaskService service) {
+        super(service);
     }
 
     @PostMapping("/{taskId}/tags/{tagId}")
+    @Transactional
     @ResponseStatus(HttpStatus.OK) // или HttpStatus.NO_CONTENT если не нужно возвращать данные
     public ResponseEntity<Void> addTagToTask(
             @PathVariable UUID taskId,
             @PathVariable UUID tagId
     ) {
-        Task task = repository.findById(taskId).orElseThrow(() -> new EntityNotFoundException("Task not found"));
-        task.addTag(tagRepository.findById(tagId).orElseThrow(() -> new EntityNotFoundException("Task not found")));
+        ((TaskService)service).addTagsToTask(taskId, Set.of(tagId));
         return ResponseEntity.ok().build();
     }
 
     @GetMapping("/{taskId}/tags")
     public Iterable<Tag> getTaskTags(@PathVariable UUID taskId) {
-        return repository.getReferenceById(taskId).getTags();
+        return ((TaskService)service).getTags(taskId);
     }
 
     @GetMapping("/{taskId}/resources")
     public Iterable<Resource> getTaskResources(@PathVariable UUID taskId) {
-        return repository.getReferenceById(taskId).getResources();
+        return ((TaskService)service).getResources(taskId);
     }
 
     @PostMapping("/{taskId}/parenttask/{parentId}")
+    @Transactional
     @ResponseStatus(HttpStatus.OK) // или HttpStatus.NO_CONTENT если не нужно возвращать данные
     public ResponseEntity<Void> addParentTaskToTask(
             @PathVariable UUID taskId,
             @PathVariable UUID parentId
     ) {
-        Task task = repository.findById(taskId).orElseThrow(() -> new EntityNotFoundException("Task not found"));
-        task.addParentTask(repository.findById(parentId).orElseThrow(() -> new EntityNotFoundException("Task not found")));
+        ((TaskService)service).addParentTaskToTask(taskId, parentId);
         return ResponseEntity.ok().build();
     }
 
     @GetMapping("/{taskId}/parenttasks")
     public Iterable<Task> getParentTasks(@PathVariable UUID taskId) {
-        return repository.getReferenceById(taskId).getParentTasks();
+        return ((TaskService)service).getParentTasks(taskId);
     }
 
     @PostMapping("/{taskId}/childtask/{childId}")
+    @Transactional
     public ResponseEntity<Void> addChildTaskToTask(
             @PathVariable UUID taskId,
             @PathVariable UUID childId
     ) {
-        Task task = repository.getReferenceById(taskId);
-        task.addChildTask(repository.findById(childId).orElseThrow(() -> new EntityNotFoundException("Task not found")));
+        ((TaskService)service).addChildTaskToTask(taskId, childId);
         return ResponseEntity.ok().build();
     }
 
     @GetMapping("/{taskId}/childtasks")
+    @Transactional
     public Iterable<Task> getChildTasks(@PathVariable UUID taskId) {
-        return repository.getReferenceById(taskId).getChildTasks();
+        return ((TaskService)service).getChildTasks(taskId);
     }
 
     @PatchMapping("/{taskId}/tags")
+    @Transactional
     public ResponseEntity<List<Task>> addTagsToTask(
             @PathVariable UUID taskId,
             @RequestBody Set<UUID> tagIds
@@ -89,19 +86,11 @@ public class TaskController extends SimpleBaseController<Task, UUID> {
             return ResponseEntity.badRequest().build();
         }
 
-        Task task = repository.findById(taskId)
-                .orElseThrow(() -> new EntityNotFoundException("Task not found"));
-
-        Set<Tag> tags = tagIds
-                .stream()
-                .map(tagRepository::getReferenceById).collect(Collectors.toSet());
-
-        task.getTags().addAll(tags);
-
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+        return ResponseEntity.status(HttpStatus.CREATED).body(((TaskService)service).addTagsToTask(taskId, tagIds));
     }
 
     @PatchMapping("/{taskId}/resources")
+    @Transactional
     public ResponseEntity<List<Task>> addResourcesToTask(
             @PathVariable UUID taskId,
             @RequestBody Set<UUID> resourcesIds
@@ -110,15 +99,6 @@ public class TaskController extends SimpleBaseController<Task, UUID> {
             return ResponseEntity.badRequest().build();
         }
 
-        Task task = repository.findById(taskId)
-                .orElseThrow(() -> new EntityNotFoundException("Task not found"));
-
-        Set<Resource> resources = resourcesIds
-                .stream()
-                .map(resourceRepository::getReferenceById).collect(Collectors.toSet());
-
-        task.getResources().addAll(resources);
-
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+        return ResponseEntity.status(HttpStatus.CREATED).body(((TaskService)service).addResourcesToTask(taskId, resourcesIds));
     }
 }
