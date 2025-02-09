@@ -1,5 +1,6 @@
 package su.sendandsolve.server.data.controller;
 
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,7 +24,7 @@ public class TaskController extends BaseController<TaskResponse, Task, UUID> {
         super(service);
     }
 
-    @PostMapping("/{taskId}/tags/{tagId}")
+    @PutMapping("/{taskId}/tags/{tagId}")
     @Transactional
     @ResponseStatus(HttpStatus.OK) // или HttpStatus.NO_CONTENT если не нужно возвращать данные
     public ResponseEntity<Void> addTagToTask(
@@ -35,16 +36,16 @@ public class TaskController extends BaseController<TaskResponse, Task, UUID> {
     }
 
     @GetMapping("/{taskId}/tags")
-    public Iterable<Tag> getTaskTags(@PathVariable UUID taskId) {
-        return ((TaskService)service).getTags(taskId);
+    public ResponseEntity<Iterable<Tag>> getTaskTags(@PathVariable UUID taskId) {
+        return ResponseEntity.status(HttpStatus.OK).body(((TaskService)service).getTags(taskId));
     }
 
     @GetMapping("/{taskId}/resources")
-    public Iterable<Resource> getTaskResources(@PathVariable UUID taskId) {
-        return ((TaskService)service).getResources(taskId);
+    public ResponseEntity<Iterable<Resource>> getTaskResources(@PathVariable UUID taskId) {
+        return ResponseEntity.status(HttpStatus.OK).body(((TaskService)service).getResources(taskId));
     }
 
-    @PostMapping("/{taskId}/parenttask/{parentId}")
+    @PostMapping("/{taskId}/parenttasks/{parentId}")
     @Transactional
     @ResponseStatus(HttpStatus.OK) // или HttpStatus.NO_CONTENT если не нужно возвращать данные
     public ResponseEntity<Void> addParentTaskToTask(
@@ -76,7 +77,7 @@ public class TaskController extends BaseController<TaskResponse, Task, UUID> {
         return ((TaskService)service).getChildTasks(taskId);
     }
 
-    @PatchMapping("/{taskId}/tags")
+    @PostMapping("/{taskId}/tags")
     @Transactional
     public ResponseEntity<List<Task>> addTagsToTask(
             @PathVariable UUID taskId,
@@ -85,11 +86,11 @@ public class TaskController extends BaseController<TaskResponse, Task, UUID> {
         if (tagIds == null || tagIds.isEmpty()) {
             return ResponseEntity.badRequest().build();
         }
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(((TaskService)service).addTagsToTask(taskId, tagIds));
+        ((TaskService)service).addTagsToTask(taskId, tagIds);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
-    @PatchMapping("/{taskId}/resources")
+    @PutMapping("/{taskId}/resources")
     @Transactional
     public ResponseEntity<List<Task>> addResourcesToTask(
             @PathVariable UUID taskId,
@@ -100,5 +101,49 @@ public class TaskController extends BaseController<TaskResponse, Task, UUID> {
         }
 
         return ResponseEntity.status(HttpStatus.CREATED).body(((TaskService)service).addResourcesToTask(taskId, resourcesIds));
+    }
+
+    @DeleteMapping("/{taskId}/tags/{tagId}")
+    @Transactional
+    public ResponseEntity<Void> deleteTagFromTask(@PathVariable UUID taskId, @PathVariable UUID tagId) {
+        try {
+            ((TaskService)service).deleteTagFromTask(taskId, tagId);
+            return ResponseEntity.ok().build();
+        }catch (EntityNotFoundException e){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+    }
+
+    @DeleteMapping("/{taskId}/resources/{resourceId}")
+    @Transactional
+    public ResponseEntity<Void> deleteResourceFromTask(@PathVariable UUID taskId, @PathVariable UUID resourceId) {
+        try {
+            ((TaskService)service).deleteResourceFromTask(taskId, resourceId);
+            return ResponseEntity.ok().build();
+        }catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+    }
+
+    @DeleteMapping("/{taskId}/childtasks/{childId}")
+    @Transactional
+    public ResponseEntity<Void> deleteChildTaskFromTask(@PathVariable UUID taskId, @PathVariable UUID childId) {
+        try {
+            ((TaskService)service).deleteChildTaskFromTask(taskId, childId);
+            return ResponseEntity.ok().build();
+        }catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+    }
+
+    @DeleteMapping("/{taskId}/parenttasks/{childId}")
+    @Transactional
+    public ResponseEntity<Void> deleteParentTaskFromTask(@PathVariable UUID taskId, @PathVariable UUID parentId) {
+        try {
+            ((TaskService)service).deleteParentTaskFromTask(taskId, parentId);
+            return ResponseEntity.ok().build();
+        }catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
     }
 }

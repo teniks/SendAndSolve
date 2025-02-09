@@ -9,7 +9,7 @@ import java.util.List;
 public interface ResourceMapper {
     default ResourceResponse toResourceResponse(Resource resource){
         return new ResourceResponse(resource.getUuid(), resource.getCreator().getUuid(), resource.getUploadTimestamp(),
-                resource.getByteSize(), resource.getHash(), resource.getFileLocation());
+                resource.getByteSize(), resource.getHash(), resource.getFileLocation(), resource.getMetadata());
     }
     List<ResourceResponse> toResourceResponseList(List<Resource> resources);
 }

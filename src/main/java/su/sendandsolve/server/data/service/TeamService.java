@@ -1,47 +1,58 @@
 package su.sendandsolve.server.data.service;
 
 import jakarta.persistence.EntityNotFoundException;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import su.sendandsolve.server.data.datatransferobject.TeamMapper;
 import su.sendandsolve.server.data.datatransferobject.TeamResponse;
-import su.sendandsolve.server.data.domain.Task;
+import su.sendandsolve.server.data.datatransferobject.UserMapper;
+import su.sendandsolve.server.data.datatransferobject.UserResponse;
 import su.sendandsolve.server.data.domain.Team;
-import su.sendandsolve.server.data.domain.User;
 import su.sendandsolve.server.data.repository.TeamRepository;
+import su.sendandsolve.server.data.repository.UserRepository;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 public class TeamService implements IService<TeamResponse, Team, UUID> {
     private final TeamRepository repository;
+    private final UserRepository userRepository;
     private final TeamMapper mapper;
+    private final UserMapper userMapper;
 
-    public TeamService(TeamRepository repository, TeamMapper mapper) {
+    public TeamService(TeamRepository repository, TeamMapper mapper, UserRepository userRepository, UserMapper userMapper) {
         this.repository = repository;
         this.mapper = mapper;
+        this.userRepository = userRepository;
+        this.userMapper = userMapper;
     }
 
-    @Transactional
-    @Override
-    public TeamResponse create(Team entity) {
-        return mapper.toTeamResponse(repository.save(entity));
+    public Team fromResponse(TeamResponse response){
+        Team team = new Team();
+        team.setUuid(response.uuid());
+        team.setTitle(response.title());
+        if(response.members() != null) team.setMembers(new HashSet<>(userRepository.findAllById(response.members())));
+        team.setCreator(userRepository.findById(response.creatorId()).orElseThrow(EntityNotFoundException::new));
+        return team;
     }
 
-    @Transactional
     @Override
-    public Collection<TeamResponse> saveAll(Collection<Team> entities) {
-        return repository.saveAll(entities).stream().map(mapper::toTeamResponse).toList();
+    public TeamResponse create(TeamResponse entity) {
+        Team team = fromResponse(entity);
+        team.setUuid(UUID.randomUUID());
+        return mapper.toTeamResponse(repository.save(team));
     }
 
-    @Transactional
     @Override
-    public TeamResponse update(Team entity) {
-        return mapper.toTeamResponse(repository.save(entity));
+    public Collection<TeamResponse> saveAll(Collection<TeamResponse> entities) {
+        List<Team> teams = entities.stream().map(this::fromResponse).toList();
+        for(Team team : teams) team.setUuid(UUID.randomUUID());
+        return repository.saveAll(teams).stream().map(mapper::toTeamResponse).toList();
+    }
+
+    @Override
+    public TeamResponse update(TeamResponse entity) {
+        return mapper.toTeamResponse(repository.save(fromResponse(entity)));
     }
 
     @Override
@@ -50,33 +61,33 @@ public class TeamService implements IService<TeamResponse, Team, UUID> {
     }
 
     @Override
-    public Page<TeamResponse> getAll(Pageable pageable) {
-        return repository.findAll(pageable).map(mapper::toTeamResponse);
+    public Collection<TeamResponse> getAll(Pageable pageable) {
+        return repository.findAll(pageable).map(mapper::toTeamResponse).getContent();
     }
 
-    @Transactional
     @Override
     public void delete(UUID uuid) {
         repository.deleteById(uuid);
     }
 
-    @Transactional
     @Override
     public void deleteAllByIdInBatch(Collection<UUID> uuids) {
         repository.deleteAllByIdInBatch(uuids);
     }
 
-    @Transactional
     public void addMemberToTeam(UUID teamId, UUID userId) {
-        repository.addMemberToTeam(teamId, userId);
+        repository.findById(teamId).orElseThrow(EntityNotFoundException::new).getMembers().add(userRepository.findById(userId).orElseThrow(EntityNotFoundException::new));
     }
 
-    @Transactional
-    public Iterable<User> getTeamMembers(UUID teamId) {
-        return repository.getTeamMembers(teamId);
+    public List<UserResponse> getTeamMembers(UUID teamId, Pageable pageable) {
+        return userMapper.toUserResponseList(new ArrayList<>((repository.findById(teamId).orElseThrow(EntityNotFoundException::new).getMembers())));
     }
 
-    public List<Task> addTeamMembers(UUID teamId, List<UUID> userIds) {
-        return repository.addTeamMembers(teamId, userIds);
+    public void addTeamMembers(UUID teamId, Set<UUID> userIds) {
+        repository.findById(teamId).orElseThrow(EntityNotFoundException::new).getMembers().addAll(userRepository.findAllById(userIds));
+    }
+
+    public void deleteMemberFromTeam(UUID teamId, UUID userId) {
+        repository.findById(teamId).orElseThrow(EntityNotFoundException::new).getMembers().remove(userRepository.findById(userId).orElseThrow(EntityNotFoundException::new));
     }
 }

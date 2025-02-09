@@ -1,14 +1,12 @@
 package su.sendandsolve.server.data.service;
 
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.transaction.NotSupportedException;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import su.sendandsolve.server.data.datatransferobject.UserMapper;
 import su.sendandsolve.server.data.datatransferobject.UserResponse;
 import su.sendandsolve.server.data.domain.User;
+import su.sendandsolve.server.data.exception.AlreadyExistsException;
 import su.sendandsolve.server.data.repository.UserRepository;
 
 import java.util.Collection;
@@ -25,27 +23,36 @@ public class UserService implements IService<UserResponse, User, UUID> {
         this.mapper = mapper;
     }
 
+    private User fromResponse(UserResponse entity) {
+        User user = new User();
+        user.setUuid(entity.uuid());
+        user.setNickname(entity.nickname());
+        user.setLogin(entity.login());
+        user.setPassword(entity.password());
+        return user;
+    }
+
     public UserResponse findByLogin(String login) {
         User user = ((UserRepository)repository).findByLogin(login);
         return mapper.toUserResponse(user);
     }
 
-    @Transactional
     @Override
-    public UserResponse create(User entity) {
-        return mapper.toUserResponse(repository.save(entity));
+    public UserResponse create(UserResponse entity) throws AlreadyExistsException {
+        User user = fromResponse(entity);
+        user.setUuid(UUID.randomUUID());
+        if(repository.findByLogin(user.getLogin()) != null) throw new AlreadyExistsException("This user already exists");
+        return mapper.toUserResponse(repository.save(user));
     }
 
-    @Transactional
     @Override
-    public Collection<UserResponse> saveAll(Collection<User> entities) {
+    public Collection<UserResponse> saveAll(Collection<UserResponse> entities) {
         return List.of();
     }
 
-    @Transactional
     @Override
-    public UserResponse update(User entity) {
-        return mapper.toUserResponse(repository.save(entity));
+    public UserResponse update(UserResponse entity) throws EntityNotFoundException {
+        return mapper.toUserResponse(repository.save(fromResponse(entity)));
     }
 
     @Override
@@ -54,17 +61,15 @@ public class UserService implements IService<UserResponse, User, UUID> {
     }
 
     @Override
-    public Page<UserResponse> getAll(Pageable pageable) {
-        return repository.findAll(pageable).map(mapper::toUserResponse);
+    public Collection<UserResponse> getAll(Pageable pageable) {
+        return repository.findAll(pageable).map(mapper::toUserResponse).getContent();
     }
 
-    @Transactional
     @Override
     public void delete(UUID uuid) {
         repository.deleteById(uuid);
     }
 
-    @Transactional
     @Override
     public void deleteAllByIdInBatch(Collection<UUID> uuids) {
         repository.deleteAllByIdInBatch(uuids);

@@ -10,35 +10,56 @@ import su.sendandsolve.server.data.domain.Note;
 import su.sendandsolve.server.data.domain.Tag;
 import su.sendandsolve.server.data.repository.NoteRepository;
 import su.sendandsolve.server.data.repository.TagRepository;
+import su.sendandsolve.server.data.repository.UserRepository;
 
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class NoteService implements IService<NoteResponse, Note, UUID>{
     private final NoteRepository repository;
     private final NoteMapper mapper;
     private final TagRepository tagRepository;
+    private final UserRepository userRepository;
 
-    public NoteService(NoteRepository repository, TagRepository tagRepository, NoteMapper mapper) {
+    public NoteService(NoteRepository repository, TagRepository tagRepository, NoteMapper mapper, UserRepository userRepository) {
         this.repository = repository;
         this.mapper = mapper;
         this.tagRepository = tagRepository;
+        this.userRepository = userRepository;
+    }
+
+    private Note fromResponse(NoteResponse response){
+        Note note = new Note();
+        note.setUuid(response.uuid());
+        note.setTitle(response.title());
+        note.setDescription(response.content());
+        note.setDateCreation(response.creationDate());
+        note.setUser(userRepository.findById(response.userId()).orElseThrow(EntityNotFoundException::new));
+        if(response.tags() != null) note.setTags(new HashSet<>(tagRepository.findAllById(response.tags())));
+        return note;
     }
 
     @Override
-    public NoteResponse create(Note entity) {
-        return mapper.toNoteResponse(repository.save(entity));
+    public NoteResponse create(NoteResponse entity) {
+        Note note = fromResponse(entity);
+        note.setUuid(UUID.randomUUID());
+        return mapper.toNoteResponse(repository.save(note));
     }
 
     @Override
-    public Collection<NoteResponse> saveAll(Collection<Note> entities) {
-        return mapper.toNoteResponseList(repository.saveAll(entities));
+    public Collection<NoteResponse> saveAll(Collection<NoteResponse> entities) {
+        List<Note> notes = entities.stream().map(this::fromResponse).toList();
+        for (Note note : notes) note.setUuid(UUID.randomUUID());
+        return mapper.toNoteResponseList(repository.saveAll(notes));
     }
 
     @Override
-    public NoteResponse update(Note entity) {
-        return mapper.toNoteResponse(repository.save(entity));
+    public NoteResponse update(NoteResponse entity) {
+        return mapper.toNoteResponse(repository.save(fromResponse(entity)));
     }
 
     @Override
@@ -47,8 +68,8 @@ public class NoteService implements IService<NoteResponse, Note, UUID>{
     }
 
     @Override
-    public Page<NoteResponse> getAll(Pageable pageable) {
-        return repository.findAll(pageable).map(mapper::toNoteResponse);
+    public Collection<NoteResponse> getAll(Pageable pageable) {
+        return repository.findAll(pageable).map(mapper::toNoteResponse).getContent();
     }
 
     @Override
@@ -67,5 +88,9 @@ public class NoteService implements IService<NoteResponse, Note, UUID>{
 
     public Iterable<Tag> getNoteTags(UUID noteId) {
         return repository.findById(noteId).orElseThrow(EntityNotFoundException::new).getTags();
+    }
+
+    public void deleteTagFromNote(UUID noteId, UUID tagId) {
+        repository.findById(noteId).orElseThrow(EntityNotFoundException::new).getTags().remove(tagRepository.findById(tagId).orElseThrow(EntityNotFoundException::new));
     }
 }

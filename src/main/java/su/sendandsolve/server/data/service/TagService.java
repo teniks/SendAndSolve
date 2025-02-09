@@ -1,7 +1,6 @@
 package su.sendandsolve.server.data.service;
 
 import jakarta.persistence.EntityNotFoundException;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -11,6 +10,7 @@ import su.sendandsolve.server.data.domain.Tag;
 import su.sendandsolve.server.data.repository.TagRepository;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -23,22 +23,33 @@ public class TagService implements IService<TagResponse, Tag, UUID> {
         this.mapper = mapper;
     }
 
-    @Transactional
-    @Override
-    public TagResponse create(Tag entity) {
-        return mapper.toTagResponse(repository.save(entity));
+    private Tag fromResponse(TagResponse response) {
+        Tag tag = new Tag();
+        tag.setUuid(response.uuid());
+        tag.setName(response.name());
+        return tag;
     }
 
     @Transactional
     @Override
-    public Collection<TagResponse> saveAll(Collection<Tag> entities) {
-        return mapper.toTagResonseList(repository.saveAll(entities));
+    public TagResponse create(TagResponse entity) {
+        Tag tag = fromResponse(entity);
+        tag.setUuid(UUID.randomUUID());
+        return mapper.toTagResponse(tag);
     }
 
     @Transactional
     @Override
-    public TagResponse update(Tag entity) {
-        return mapper.toTagResponse(repository.save(entity));
+    public Collection<TagResponse> saveAll(Collection<TagResponse> entities) {
+        List<Tag> tags = repository.saveAll(entities.stream().map(this::fromResponse).toList());
+        for (Tag tag : tags) tag.setUuid(UUID.randomUUID());
+        return mapper.toTagResonseList(tags);
+    }
+
+    @Transactional
+    @Override
+    public TagResponse update(TagResponse entity) {
+        return mapper.toTagResponse(repository.save(fromResponse(entity)));
     }
 
     @Override
@@ -47,8 +58,8 @@ public class TagService implements IService<TagResponse, Tag, UUID> {
     }
 
     @Override
-    public Page<TagResponse> getAll(Pageable pageable) {
-        return repository.findAll(pageable).map(mapper::toTagResponse);
+    public Collection<TagResponse> getAll(Pageable pageable) {
+        return repository.findAll(pageable).map(mapper::toTagResponse).getContent();
     }
 
     @Transactional

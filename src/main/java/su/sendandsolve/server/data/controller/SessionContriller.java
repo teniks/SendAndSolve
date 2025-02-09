@@ -3,8 +3,6 @@ package su.sendandsolve.server.data.controller;
 import org.springframework.web.bind.annotation.*;
 import su.sendandsolve.server.data.datatransferobject.SessionResponse;
 import su.sendandsolve.server.data.domain.Session;
-import su.sendandsolve.server.data.repository.SessionRepository;
-import su.sendandsolve.server.data.service.IService;
 import su.sendandsolve.server.data.service.SessionService;
 
 import java.util.UUID;

@@ -11,7 +11,7 @@ import java.util.List;
 public interface TeamMapper{
 
     default TeamResponse toTeamResponse(Team team){
-        return new TeamResponse(team.getUuid(), team.getTitle(), team.getCreator().getUuid());
+        return new TeamResponse(team.getUuid(), team.getTitle(), team.getCreator().getUuid(), team.getMembersUuids());
     }
     List<TeamResponse> toTeamResponseList(Collection<Team> teams);
 }

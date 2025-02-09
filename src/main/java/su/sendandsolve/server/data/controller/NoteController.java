@@ -7,9 +7,6 @@ import org.springframework.web.bind.annotation.*;
 import su.sendandsolve.server.data.datatransferobject.NoteResponse;
 import su.sendandsolve.server.data.domain.Note;
 import su.sendandsolve.server.data.domain.Tag;
-import su.sendandsolve.server.data.repository.NoteRepository;
-import su.sendandsolve.server.data.repository.TagRepository;
-import su.sendandsolve.server.data.service.IService;
 import su.sendandsolve.server.data.service.NoteService;
 
 import java.util.UUID;
@@ -35,5 +32,16 @@ public class NoteController extends BaseController<NoteResponse, Note, UUID> {
     @GetMapping("/{noteId}/tags")
     public Iterable<Tag> getNoteTags(@PathVariable UUID noteId) {
         return ((NoteService)service).getNoteTags(noteId);
+    }
+
+    @DeleteMapping("/{noteId}/tags/{tagId}")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<Void> deleteTagFromNote(@PathVariable UUID noteId, @PathVariable UUID tagId) {
+        try {
+            ((NoteService)service).deleteTagFromNote(noteId, tagId);
+            return ResponseEntity.ok().build();
+        }catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
     }
 }

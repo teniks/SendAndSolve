@@ -9,5 +9,6 @@ public record ResourceResponse(
     OffsetDateTime uploadTime,
     Long size,
     String hash,
-    String filePath){
+    String filePath,
+    String metadata){
 }

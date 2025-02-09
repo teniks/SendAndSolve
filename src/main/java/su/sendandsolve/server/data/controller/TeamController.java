@@ -1,9 +1,13 @@
 package su.sendandsolve.server.data.controller;
 
+import jakarta.persistence.EntityNotFoundException;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import su.sendandsolve.server.data.datatransferobject.TeamResponse;
+import su.sendandsolve.server.data.datatransferobject.UserResponse;
 import su.sendandsolve.server.data.domain.*;
 import su.sendandsolve.server.data.service.TeamService;
 
@@ -30,16 +34,27 @@ public class TeamController extends BaseController<TeamResponse, Team, UUID> {
     }
 
     @GetMapping("/{teamId}/users")
-    public Iterable<User> getTeamMembers(@PathVariable UUID teamId) {
-        return ((TeamService)service).getTeamMembers(teamId);
+    public List<UserResponse> getTeamMembers(@PathVariable UUID teamId, @PageableDefault Pageable pageable) {
+        return ((TeamService)service).getTeamMembers(teamId, pageable);
     }
 
     @PatchMapping("/{teamId}/users")
-    public ResponseEntity<List<Task>> addTeamMembers(
+    public ResponseEntity<Void> addTeamMembers(
             @PathVariable UUID teamId,
             @RequestBody Set<UUID> ids
     ) {
+        ((TeamService)service).addTeamMembers(teamId, ids);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(((TeamService)service).addTeamMembers(teamId, (List<UUID>) ids));
+        return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+
+    @DeleteMapping("/{teamId}/users/{userId}")
+    public ResponseEntity<Void> deleteMemberFromTeam(@PathVariable UUID teamId, @PathVariable UUID userId) {
+        try {
+            ((TeamService)service).deleteMemberFromTeam(teamId, userId);
+            return ResponseEntity.ok().build();
+        }catch (EntityNotFoundException e){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
     }
 }
