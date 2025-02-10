@@ -9,7 +9,7 @@ import java.util.List;
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface UserMapper {
     default UserResponse toUserResponse(User user) {    //map User to UserResponse
-        return new UserResponse(user.getUuid(), user.getLogin(), user.getNickname(), null);
+        return new UserResponse(user.getUuid(), user.getLogin(), user.getNickname(), "");
     }
     List<UserResponse> toUserResponseList(List<User> users); //map list of User to list of UserResponse
 }

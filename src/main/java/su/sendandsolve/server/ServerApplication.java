@@ -8,10 +8,9 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 @SpringBootApplication
 @EnableJpaRepositories(basePackages = "su.sendandsolve.server.data.repository")
 @EntityScan(basePackages = "su.sendandsolve.server.data.domain")
-public class ServerApplication {
+public class ServerApplication  {
 
 	public static void main(String[] args) {
 		SpringApplication.run(ServerApplication.class, args);
 	}
-
 }
