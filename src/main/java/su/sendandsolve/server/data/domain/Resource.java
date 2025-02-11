@@ -11,7 +11,6 @@ import java.util.UUID;
 @Table(name = "resources")
 public class Resource {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "uuid", columnDefinition = "UUID")
     private UUID uuid;
 
