@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en"> <!-- Изменили язык -->
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>Send & Solve: Server</title>
+    <link href="style.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+<header>
+    <h1>Send & Solve: Server <img alt="terminal" height="25" src="terminal.ico" width="25"></h1>
+    <nav class="nav-cards">
+        <a class="nav-card" href="#about">
+            <i class="fas fa-info-circle"></i> <!-- Добавили иконки -->
+            About Project
+        </a>
+        <a class="nav-card" href="#features">
+            <i class="fas fa-bullseye"></i>
+            Development Goals
+        </a>
+        <a class="nav-card" href="#guide">
+            <i class="fas fa-download"></i>
+            Installation
+        </a>
+        <a class="nav-card lang-switcher" href="ru/index.html">
+            <i class="fas fa-language"></i>
+            Русский
+        </a>
+    </nav>
+</header>
+
+<main>
+    <section id="about">
+        <h2>About the Project</h2>
+        <p>The server part of a system designed to help you organize tasks. Whether for personal use or team collaboration, Send & Solve provides full support.</p>
+    </section>
+
+    <section id="features">
+        <h2>Development Goals</h2>
+        <ul>
+            <li>Create tasks, subtasks, notes, and attached resources</li>
+            <li>User management with access control and team collaboration features</li>
+            <li>Priority settings, status tracking, tags, deadlines, and progress monitoring</li>
+            <li>Client-server synchronization mechanisms after connection loss</li>
+            <li>Easy deployment for non-technical users</li>
+        </ul>
+    </section>
+
+    <section id="guide">
+        <h2>Installation Guide</h2>
+        <div class="card">
+            <h3><i class="fa fa-coffee"></i> Step 1: Install Java</h3>
+            <p>Download from official website:</p>
+            <a href="https://www.java.com/en/download/manual.jsp">
+                Go to the download page  Java
+            </a>
+        </div>
+        <div class="card">
+            <h3><i aria-hidden="true" class="fa fa-server"></i> Step 2: Prepare PostgreSQL 17.2</h3>
+            <p>Install postgreSQL 17.2 and indicate when installing the port server port.</p>
+            <a href="https://www.enterprisedb.com/downloads/postgres-postgresql-downloads">Go to the download page PostgreSQL 17.2</a>
+        </div>
+        <div class="card">
+            <h3><i aria-hidden="true" class="fas fa-database"></i> Step 3: Create a database and tables</h3>
+            <p>In pgAdmin, make a script for creating a database and tables:</p>
+            <a class="button" href="https://github.com/teniks/SendAndSolve/blob/master/tables-db-sendandsolve.sql">Download the script of tables</a>
+        </div>
+        <div class="card">
+            <h3><i aria-hidden="true" class="fa fa-file"></i> Step 4: Prepare user script for a change</h3>
+            <p>Next, OPEN a script to create a user and determine his rights:</p>
+            <a class="button" href="https://github.com/teniks/SendAndSolve/blob/master/user-db-sendandsolve.sql">Download user script</a>
+        </div>
+        <div class="card">
+            <h3><i aria-hidden="true" class="fa fa-user-secret"></i> Step 5: To come up with the user and password</h3>
+            <p>To come up with the name of the user on behalf of which the server will work, as well as the password for him.</p>
+        </div>
+        <div class="card">
+            <h3><i aria-hidden="true" class="fa fa-pencil"></i> Step 6: Change user script</h3>
+            <p>In the line <code>create user app_server with LOGIN password '';</code> replace App_Server in the name for the user, and inside (<code>' '</code>) indicate the password for the user.</p>
+        </div>
+        <div class="card">
+            <h3><i class="fa fa-check-square"></i> Step 7: Set Environment Variables</h3>
+            <ul>
+                <li><code>DB_SAS_USERNAME</code> - database username</li>
+                <li><code>DB_SAS_PASSWORD</code> - database password</li>
+                <li><code>DB_SAS_URL</code> - connection string:
+                    <code>jdbc:postgresql://[DB_HOST]:[PORT]/[DB_NAME]</code>
+                </li>
+                <li>Example:
+                    <code>DB_SAS_URL</code> = <code>jdbc:postgresql://localhost:5432/sendandsolvemain</code>
+                </li>
+            </ul>
+        </div>
+    </section>
+</main>
+
+<footer>
+    <p>GitHub Repository: <a href="https://github.com/teniks/SendAndSolve">Project Link</a></p>
+</footer>
+</body>
+</html>

@@ -5,12 +5,12 @@ import jakarta.persistence.*;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "teams")
 public class Team {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "uuid", columnDefinition = "UUID")
     private UUID uuid;
 
@@ -88,5 +88,9 @@ public class Team {
 
     public void setMember(User user) {
         this.members.add(user);
+    }
+
+    public Set<UUID> getMembersUuids() {
+        return members.stream().map(User::getUuid).collect(Collectors.toSet());
     }
 }

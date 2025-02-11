@@ -10,7 +10,6 @@ import java.util.UUID;
 public class Tag {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "uuid", columnDefinition = "UUID")
     private UUID uuid;
 
