@@ -10,8 +10,8 @@ import java.time.OffsetDateTime;
 @Entity
 @Table(name = "tasks")
 public class Task {
+
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "uuid", columnDefinition = "UUID")
     private UUID uuid;
 

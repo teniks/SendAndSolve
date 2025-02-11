@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>Send & Solve: Server</title>
+    <!-- Стили и метаданные -->
+    <link href="../style.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="js/scripts.js"></script>
+</head>
+<body>
+<header>
+    <h1>Send & Solve: Server <img alt="terminal" height="25" src="../terminal.ico" width="25"></h1>
+    <nav class="nav-cards">
+        <a class="nav-card" href="#about">
+            <i class="fas fa-info-circle"></i>
+            О проекте
+        </a>
+        <a class="nav-card" href="#features">
+            <i class="fas fa-bullseye"></i>
+            Цели разработки
+        </a>
+        <a class="nav-card" href="#guide">
+            <i class="fas fa-download"></i>
+            Установка
+        </a>
+        <a class="nav-card lang-switcher" href="../index.html">
+        <i class="fas fa-language"></i>
+        English
+    </a>
+    </nav>
+</header>
+
+<main>
+    <section id="about">
+        <h2>О проекте</h2>
+        <p>Серверная часть системы, назначение которой - помогать вам в организации ваших задач. Только для себя или для команды - выбирать вам, а Send & Solve окажет поддержку.</p>
+    </section>
+
+    <section id="features">
+        <h2>Цели разработки</h2>
+        <ul>
+            <li>Создание задач, подзадач, записок, вложенных ресурсов.</li>
+            <li>Создание пользователей, назначение других пользователей на исполнителей, разграничение доступа, возможность объединения исполнителей в команды.</li>
+            <li>Расстановка приоритетов, статусов, тегов, сроков, прогресса.</li>
+            <li>Механизмы синхронизации клиента и сервера после перерыва.</li>
+            <li>Обеспечение удобства развертывания даже для неподготовленного пользователя.</li>
+        </ul>
+    </section>
+
+    <section id="guide">
+        <h2>Инструкция по установке</h2>
+        <div class="card">
+            <h3><i aria-hidden="true" class="fa fa-coffee"></i> Шаг 1: Установите Java</h3>
+            <p>Скачайте с официального сайта:</p>
+            <a href="https://www.java.com/en/download/manual.jsp">Перейти на страницу скачивания  Java</a>
+        </div>
+        <div class="card">
+            <h3><i aria-hidden="true" class="fa fa-server"></i> Шаг 2: Подготовить PostgreSQL 17.2</h3>
+            <p>Установить PostgreSQL 17.2 и указать при установке порт сервера БД.</p>
+            <a href="https://www.enterprisedb.com/downloads/postgres-postgresql-downloads">Перейти на страницу скачивания PostgreSQL 17.2</a>
+        </div>
+        <div class="card">
+            <h3><i aria-hidden="true" class="fas fa-database"></i> Шаг 3: Создать базу данных и таблицы </h3>
+            <p>В pgAdmin выполнить скрипт по созданию БД и таблиц:</p>
+            <a class="button" href="https://github.com/teniks/SendAndSolve/blob/master/tables-db-sendandsolve.sql">Скачать скрипт таблиц</a>
+        </div>
+        <div class="card">
+            <h3><i aria-hidden="true" class="fa fa-file"></i> Шаг 4: Подготовить к изменению скрипт пользователя</h3>
+            <p>Следом ОТКРЫТЬ скрипт по созданию пользователя и определения его прав: </p>
+            <a class="button" href="https://github.com/teniks/SendAndSolve/blob/master/user-db-sendandsolve.sql">Скачать скрипт пользователя</a>
+        </div>
+        <div class="card">
+            <h3><i aria-hidden="true" class="fa fa-user-secret"></i> Шаг 5: Придумать пользователя и пароль</h3>
+            <p>Придумать имя пользователя, от имени которого будет работать сервер, а также пароль для него.</p>
+        </div>
+        <div class="card">
+            <h3><i aria-hidden="true" class="fa fa-pencil"></i> Шаг 6: Изменить скрипт пользователя</h3>
+            <p>В строке <code>create user app_server with LOGIN password '';</code> Заменить app_server на имя для пользователя, а внутри кавычек (<code>' '</code>) указать пароль для пользователя.</p>
+        </div>
+        <div class="card">
+            <h3><i aria-hidden="true" class="fa fa-check-square"></i> Шаг 7: Задать Переменные окружения</h3>
+            <ul>
+                <li><code>DB_SAS_USERNAME</code>- эта переменная будет хранить имя вашего пользователя.</li>
+                <li><code>DB_SAS_PASSWORD</code> - а эта переменная будет хранить пароль вашего пользователя.</li>
+                <li><code>DB_SAS_URL</code> - эта переменная хранит строку подключения к БД: <code>jdbc:postgresql://[адрес сервера БД]:[порт]/[название БД]</code></li>
+                <li>Пример переменной <code>DB_SAS_URL</code> = <code>jdbc:postgresql://localhost:5432/sendandsolvemain</code></li>
+            </ul>
+        </div>
+    </section>
+</main>
+
+<footer>
+    <p>Ссылка на GitHub: <a href="https://github.com/teniks/SendAndSolve">Репозиторий</a></p>
+</footer>
+</body>
+</html>
